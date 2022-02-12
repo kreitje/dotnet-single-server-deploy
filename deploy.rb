@@ -2,6 +2,7 @@ require 'net/http'
 require 'time'
 require './webservers/base'
 require './webservers/caddy'
+require './webservers/nginx'
 
 class Deploy
 
@@ -16,6 +17,8 @@ class Deploy
     case config['webserver']
     when "caddy"
       @webserver = Caddy.new(config)
+    when "nginx"
+      @webserver = Nginx.new(config)
     else
       raise "Invalid webserver type"
     end
@@ -47,6 +50,8 @@ class Deploy
       unless @dry_run
         @webserver.before_update(app['port'])
       end
+
+      sleep(2)
 
       puts "Stop service"
       unless @dry_run

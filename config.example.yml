@@ -3,6 +3,7 @@ app_dll: DotnetApp.dll
 root_path: /var/www/app1
 update_zip_absolute_path: /home/ubuntu/DotnetApp.zip
 caddy_upstream_key: dotnetcore
+nginx_upstream_path:
 healthcheck: /test
 shared_files:
   - appsettings.Production.json
