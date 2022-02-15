@@ -3,10 +3,20 @@ class Install
 
   @config = {}
   @dry_run = true
+  @webserver = nil
 
   def initialize(config, dry_run = true)
     @config = config
     @dry_run = dry_run
+
+    case config['webserver']
+    when "caddy"
+      @webserver = Caddy.new(config)
+    when "nginx"
+      @webserver = Nginx.new(config)
+    else
+      raise "Invalid webserver type"
+    end
   end
 
   def execute
@@ -19,6 +29,8 @@ class Install
       `mkdir -p #{@config['root_path']}/releases`
     end
 
+    app_name = get_app_name
+
     @config['servers'].each_with_index do |app, index|
       puts "Creating #{app['path']} for port #{app['port']} directory"
       unless @dry_run
@@ -26,10 +38,14 @@ class Install
       end
 
       write_service_file(app['path'], app['port'])
-
-      `chown -R www-data:www-data #{@config['root_path']}`
-      `chmod -R 775 #{@config['root_path']}`
+      `systemctl enable kestrel-#{app_name}_#{app['port']}.service`
     end
+
+    puts "Doing webserver install"
+    @webserver.install
+
+    `chown -R www-data:www-data #{@config['root_path']}`
+    `chmod -R 775 #{@config['root_path']}`
   end
 
   private

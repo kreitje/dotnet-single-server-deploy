@@ -8,14 +8,15 @@ class Nginx < Base
   def initialize(config)
     super(config)
 
-    if config['nginx_upstream_path'] == nil
-      raise "The nginx driver requires a 'nginx_upstream_path' yaml property"
+    if config['nginx_upstream_name'] == nil
+      raise "The nginx driver requires a 'nginx_upstream_name' yaml property"
     end
 
-    config_file = Pathname.new(config['nginx_upstream_path'])
-    unless config_file.writable?
-      raise "#{config['nginx_upstream_path']} is not writable"
-    end
+    #this is ran as sudo
+    #config_file = Pathname.new("#{@config['root_path']}/nginx_upstream_#{@config['nginx_upstream_name']}.conf")
+    #unless config_file.writable?
+    #  raise "#{@config['root_path']}/nginx_upstream_#{@config['nginx_upstream_name']}.conf is not writable"
+    #end
   end
 
   def before_update(current_port)
@@ -32,6 +33,12 @@ class Nginx < Base
     update_nginx_upstream(new_upstream_content)
 
     reload_nginx
+  end
+
+  def install
+    new_upstream_content = get_upstream_content(get_other_ports(0))
+    File.write("#{@config['root_path']}/nginx_upstream_#{@config['nginx_upstream_name']}.conf", new_upstream_content)
+    `sudo ln -s #{@config['root_path']}/nginx_upstream_#{@config['nginx_upstream_name']}.conf  /etc/nginx/conf.d/#{@config['nginx_upstream_name']}.conf`
   end
 
   private
@@ -64,8 +71,8 @@ class Nginx < Base
 
     #overwrite the config with the temporary file
     FileUtils.mv(temp_file.path, file_path)
-    FileUtils.chown(old_stat.uid, old_stat.gid, file_path)
     FileUtils.chmod(old_stat.mode, file_path)
+    FileUtils.chown(old_stat.uid, old_stat.gid, file_path)
 
   end
 

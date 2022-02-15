@@ -23,6 +23,9 @@ class Caddy < Base
     update_caddy_upstreams(json_to_patch)
   end
 
+  def install
+  end
+
   private
 
   def get_upstream_json(ports)
