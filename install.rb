@@ -38,7 +38,9 @@ class Install
       end
 
       write_service_file(app['path'], app['port'])
-      `systemctl enable kestrel-#{app_name}_#{app['port']}.service`
+      unless @dry_run
+        `systemctl enable kestrel-#{app_name}_#{app['port']}.service`
+      end
     end
 
     puts "Doing webserver install"
