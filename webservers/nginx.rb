@@ -72,7 +72,6 @@ class Nginx < Base
     #overwrite the config with the temporary file
     FileUtils.mv(temp_file.path, file_path)
     FileUtils.chmod(old_stat.mode, file_path)
-    FileUtils.chown(old_stat.uid, old_stat.gid, file_path)
 
   end
 
